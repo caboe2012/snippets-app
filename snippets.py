@@ -18,3 +18,14 @@ def get(name):
     """
     logging.error("FIXME - Unimplemented - get({!r})".format(name))
     return ""
+
+def update(name, snippet):
+    """ Modify the snippet with the given name."""
+    return name, snippet
+
+def delete(name, snippet):
+    """ Deletes the snippet with the given name."""
+    print "Successfully deleted snippet {}.".format(name)
+    return ""
+
+
