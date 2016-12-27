@@ -1,14 +1,14 @@
 import logging
 
 #set the log file name and level
-logging.basicConfig(filename = "snippets.log", logging.level = DEBUG)
+logging.basicConfig(filename = "snippets.log", level = logging.DEBUG)
 
 def put(name, snippet):
     """
     Store a snippet with the associated name.
     Returns the name and the snippet.
     """
-    logging.error("FIXME - Unimplemented put({!r}, {!r})".format("name, snippt))
+    logging.error("FIXME - Unimplemented put({!r}, {!r})".format(name, snippet))
     return name, snippet
 
 def get(name):
