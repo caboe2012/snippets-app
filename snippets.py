@@ -2,7 +2,7 @@ import logging
 import argparse
 
 # set the log file name and the logging level
-logging.basicConfig(filname = "snippets.log", level = logging.DEBUG)
+logging.basicConfig(filename = "snippets.log", level = logging.DEBUG)
 
 
 # create the four CRUD functions for snippets skeleton
