@@ -1,4 +1,5 @@
 import logging
+import argparse
 
 #set the log file name and level
 logging.basicConfig(filename = "snippets.log", level = logging.DEBUG)
@@ -28,4 +29,9 @@ def delete(name, snippet):
     print "Successfully deleted snippet {}.".format(name)
     return ""
 
+def main():
+    """ Main Function """
+    logging.info("Constructing Parser")
+    parser = argparse.ArgumentParser(description = "Store and retrieve snippets of text".)
+    arguments = parser.parse_args()
 
