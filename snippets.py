@@ -37,9 +37,9 @@ def get(name):
     command = "select message from snippets where keyword = (%s)"
     cursor.execute(command, (name,))
     message = cursor.fetchone()
-    print message[0]
+    connection.commit()
     logging.debug("Snippet retrieved successfully")
-    return name
+    return message[0]
 
 def update(name, snippet):
     """ Modify the snippet with the given name."""
