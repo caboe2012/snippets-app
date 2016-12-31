@@ -31,7 +31,9 @@ def get(name):
     If there is no such snippet, return '404: Snippet Not Found'.
     Returns the Snippet.
     """
-    logging.error("FIXME: Unimplemented - get({!r})".format(name))
+    #logging.error("FIXME: Unimplemented - get({!r})".format(name))
+    logging.info("Retrieving snippet {!r}".format(name))
+    
     return ""#'404: Snippet Not Found'
 
 def update(name, snippet):
