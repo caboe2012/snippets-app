@@ -32,9 +32,14 @@ def get(name):
     Returns the Snippet.
     """
     #logging.error("FIXME: Unimplemented - get({!r})".format(name))
-    logging.info("Retrieving snippet {!r}".format(name))
-    
-    return ""#'404: Snippet Not Found'
+    logging.debug("Retrieving snippet {!r}".format(name))
+    cursor = connection.cursor()
+    command = "select message from snippets where keyword = (%s)"
+    cursor.execute(command, (name,))
+    message = cursor.fetchone()
+    print message[0]
+    logging.debug("Snippet retrieved successfully")
+    return name
 
 def update(name, snippet):
     """ Modify the snippet with the given name."""
