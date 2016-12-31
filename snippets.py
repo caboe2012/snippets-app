@@ -1,9 +1,14 @@
 import logging
 import argparse
+import psycopg2
 
 # set the log file name and the logging level
 logging.basicConfig(filename = "snippets.log", level = logging.DEBUG)
 
+# connect to the PostgreSQL database
+logging.debug("Connecting to the PostgreSQL database")
+connection = psycopg2.connect(database = "snippets")
+logging.debug("Database conncetion successful")
 
 # create the four CRUD functions for snippets skeleton
 def put(name, snippet):
@@ -12,7 +17,13 @@ def put(name, snippet):
 
     RETURNS the name and the snippet
     """
-    logging.error("FIXME: Unimplemented - put({!r}, {!r})".format(name, snippet))
+#    logging.error("FIXME: Unimplemented - put({!r}, {!r})".format(name, snippet))
+    logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
+    cursor = connection.cursor()
+    command = "insert into snippets values (%s, %s)"
+    cursor.execute(command, (name,snippet))
+    connection.commit()
+    logging.debug("Snippet stored successfully.")
     return name, snippet
 
 def get(name):
