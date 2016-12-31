@@ -31,14 +31,17 @@ def get(name):
     If there is no such snippet, return '404: Snippet Not Found'.
     Returns the Snippet.
     """
+    
     #logging.error("FIXME: Unimplemented - get({!r})".format(name))
     logging.debug("Retrieving snippet {!r}".format(name))
     cursor = connection.cursor()
     command = "select message from snippets where keyword = (%s)"
     cursor.execute(command, (name,))
     message = cursor.fetchone()
-    connection.commit()
+    #connection.commit()
     logging.debug("Snippet retrieved successfully")
+    if not message:
+        return "404: Snippet not found"
     return message[0]
 
 def update(name, snippet):
