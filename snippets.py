@@ -57,11 +57,22 @@ def catalog():
     command = "select * from snippets order by keyword"
     cursor.execute(command)
     all_keys = [each[0] for each in cursor.fetchall()]
-    print "The following keys are currently in the snippets database:"
-    i = 1
-    for key in all_keys:
-        print "{}) {}".format(str(i), key)
-        i += 1
+    return all_keys
+
+def search(word):
+    """ Display list of snippets that contain the desired word"""
+    logging.debug("Displaying a list of all like snippets")
+    cursor = connection.cursor()
+    command = "select * from snippets where message like '%{}%' order by keyword".format(word)
+    cursor.execute(command)
+    messages = cursor.fetchall()
+    if len(messages) > 0:
+        return messages
+    else:
+        print "No matches found for '{}'".format(word)
+        return ""
+        
+    
 def update(name, snippet):
     """ Modify the snippet with the given name."""
     return name, snippet
@@ -89,9 +100,14 @@ def main():
     get_parser = subparsers.add_parser("get", help = "Retrieve a snippet")
     get_parser.add_argument("name", help  = "Name of the snippet")
     
-    # subparser for the lookup command
+    # subparser for the catalog command
     logging.debug("Constructing the catalog subparser")
     catalog_parser = subparsers.add_parser("catalog", help = "Retrieve list of all keywords")
+    
+    # subparser for the search command
+    logging.debug("Constructing the seach subparser")
+    search_parser = subparsers.add_parser("search", help = "Retrieve list of all snippets contaiing the desired word")
+    search_parser.add_argument("word", help = "similarity being searched")
     
     arguments = parser.parse_args()
     
@@ -106,8 +122,21 @@ def main():
         snippet = get(**arguments)
         print "Retrieved snippet: {!r}".format(snippet)
     elif command == "catalog":
-        catalog()
-    
+        keys = catalog()
+        print "The following keys are currently in the snippets database:"
+        i = 1
+        for key in keys:
+            print "{}) {}".format(str(i), key)
+            i += 1
+    elif command == "search":
+        similar = search(**arguments)
+        if len(similar) > 0:
+            print "Found the following matches:"
+            j = 1
+            for match in similar:
+                print "{}) {}: {}".format(str(j), match[0], match[1])
+                j += 1
+        
 if __name__ == "__main__":
     main()
     
