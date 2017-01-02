@@ -19,15 +19,13 @@ def put(name, snippet):
     """
 #    logging.error("FIXME: Unimplemented - put({!r}, {!r})".format(name, snippet))
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
-    cursor = connection.cursor()
+    #cursor = connection.cursor()
     try:
-        command = "insert into snippets values (%s, %s)"
-        cursor.execute(command, (name,snippet))
+        with connection, connection.cursor() as cursor:
+            cursor.execute("insert into snippets values (%s, %s)", (name,snippet))
     except psycopg2.IntegrityError as e:
-        connection.rollback()
-        command = "update snippets set message = %s where keyword = %s"
-        cursor.execute(command, (snippet, name))
-    connection.commit()
+        with connection, connection.cursor() as cursor:
+            cursor.execute("update snippets set message = %s where keyword = %s", (snippet, name))
     logging.debug("Snippet stored successfully.")
     return name, snippet
 
@@ -36,7 +34,6 @@ def get(name):
     If there is no such snippet, return '404: Snippet Not Found'.
     Returns the Snippet.
     """
-    
     #logging.error("FIXME: Unimplemented - get({!r})".format(name))
     logging.debug("Retrieving snippet {!r}".format(name))
     #cursor = connection.cursor()
