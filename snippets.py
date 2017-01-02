@@ -39,11 +39,15 @@ def get(name):
     
     #logging.error("FIXME: Unimplemented - get({!r})".format(name))
     logging.debug("Retrieving snippet {!r}".format(name))
-    cursor = connection.cursor()
-    command = "select message from snippets where keyword = (%s)"
-    cursor.execute(command, (name,))
-    message = cursor.fetchone()
+    #cursor = connection.cursor()
+    #command = "select message from snippets where keyword = (%s)"
+    #cursor.execute(command, (name,))
+    #message = cursor.fetchone()
     #connection.commit()
+    with connection, connection.cursor() as cursor:
+        command = "select message from snippets where keyword = (%s)"
+        cursor.execute(command, (name,))
+        message = cursor.fetchone()
     logging.debug("Snippet retrieved successfully")
     if not message:
         return "404: Snippet not found"
