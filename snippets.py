@@ -50,6 +50,18 @@ def get(name):
         return "404: Snippet not found"
     return message[0]
 
+def catalog():
+    """ Display a list of all keywords in the database"""
+    logging.debug("Displaying list of all keywords in database")
+    cursor = connection.cursor()
+    command = "select * from snippets order by keyword"
+    cursor.execute(command)
+    all_keys = [each[0] for each in cursor.fetchall()]
+    print "The following keys are currently in the snippets database:"
+    i = 1
+    for key in all_keys:
+        print "{}) {}".format(str(i), key)
+        i += 1
 def update(name, snippet):
     """ Modify the snippet with the given name."""
     return name, snippet
@@ -77,6 +89,10 @@ def main():
     get_parser = subparsers.add_parser("get", help = "Retrieve a snippet")
     get_parser.add_argument("name", help  = "Name of the snippet")
     
+    # subparser for the lookup command
+    logging.debug("Constructing the catalog subparser")
+    catalog_parser = subparsers.add_parser("catalog", help = "Retrieve list of all keywords")
+    
     arguments = parser.parse_args()
     
     # convert the parsed arguments from Namespace to dictionary
@@ -89,6 +105,8 @@ def main():
     elif command == "get":
         snippet = get(**arguments)
         print "Retrieved snippet: {!r}".format(snippet)
+    elif command == "catalog":
+        catalog()
     
 if __name__ == "__main__":
     main()
