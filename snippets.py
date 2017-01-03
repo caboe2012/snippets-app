@@ -11,7 +11,7 @@ connection = psycopg2.connect(database = "snippets")
 logging.debug("Database conncetion successful")
 
 # create the four CRUD functions for snippets skeleton
-def put(name, snippet):
+def put(name, snippet, hide):
     """
     STORE a snippet with the associated name.
 
@@ -22,10 +22,10 @@ def put(name, snippet):
     #cursor = connection.cursor()
     try:
         with connection, connection.cursor() as cursor:
-            cursor.execute("insert into snippets values (%s, %s)", (name,snippet))
+            cursor.execute("insert into snippets values (%s, %s, %s)", (name,snippet, hide))
     except psycopg2.IntegrityError as e:
         with connection, connection.cursor() as cursor:
-            cursor.execute("update snippets set message = %s where keyword = %s", (snippet, name))
+            cursor.execute("update snippets set message = %s, hidden = %s where keyword = %s", (snippet,hide,name))
     logging.debug("Snippet stored successfully.")
     return name, snippet
 
@@ -94,6 +94,7 @@ def main():
     put_parser = subparsers.add_parser("put", help ="Store a snippet")
     put_parser.add_argument("name", help = "Name of the snippet")
     put_parser.add_argument("snippet", help = "Snippet text")
+    put_parser.add_argument("--hide", help = "Boolean option to show/hide the snippet", action = "store_true")
     
     # Subparser for the get command
     logging.debug("Constrcuting the get parser")
@@ -111,13 +112,18 @@ def main():
     
     arguments = parser.parse_args()
     
+    
     # convert the parsed arguments from Namespace to dictionary
     arguments = vars(arguments)
     command = arguments.pop("command")
+    print "Arguments", arguments
     
     if command == "put":
         name,snippet = put(**arguments)
         print "Stored {!r} as {!r}".format(snippet,name)
+        print "Hidden", arguments['hide']
+        if arguments['hide']:
+            print "This snippet will be hidden."
     elif command == "get":
         snippet = get(**arguments)
         print "Retrieved snippet: {!r}".format(snippet)
