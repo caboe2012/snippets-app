@@ -11,7 +11,7 @@ connection = psycopg2.connect(database = "snippets")
 logging.debug("Database conncetion successful")
 
 # create the four CRUD functions for snippets skeleton
-def put(name, snippet, hide):
+def put(name, snippet, hide, show):
     """
     STORE a snippet with the associated name.
 
@@ -20,6 +20,8 @@ def put(name, snippet, hide):
 #    logging.error("FIXME: Unimplemented - put({!r}, {!r})".format(name, snippet))
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
     #cursor = connection.cursor()
+    print "Hide: {}".format(hide)
+    print "Show: {}".format(show)
     try:
         with connection, connection.cursor() as cursor:
             cursor.execute("insert into snippets values (%s, %s, %s)", (name,snippet, hide))
@@ -42,19 +44,20 @@ def get(name):
     #message = cursor.fetchone()
     #connection.commit()
     with connection, connection.cursor() as cursor:
-        command = "select message from snippets where keyword = (%s)"
+        command = "select * from snippets where keyword = (%s)"
         cursor.execute(command, (name,))
         message = cursor.fetchone()
     logging.debug("Snippet retrieved successfully")
     if not message:
-        return "404: Snippet not found"
-    return message[0]
+        print "404: Snippet not found"
+        return -1
+    return message
 
 def catalog():
-    """ Display a list of all keywords in the database"""
+    """ Display a list of all unhidden keywords in the database"""
     logging.debug("Displaying list of all keywords in database")
     cursor = connection.cursor()
-    command = "select * from snippets order by keyword"
+    command = "select * from snippets where not hidden order by keyword"
     cursor.execute(command)
     all_keys = [each[0] for each in cursor.fetchall()]
     return all_keys
@@ -63,7 +66,7 @@ def search(word):
     """ Display list of snippets that contain the desired word"""
     logging.debug("Displaying a list of all like snippets")
     cursor = connection.cursor()
-    command = "select * from snippets where message like '%{}%' order by keyword".format(word)
+    command = "select * from snippets where message like '%{}%' and not hidden order by keyword".format(word)
     cursor.execute(command)
     messages = cursor.fetchall()
     if len(messages) > 0:
@@ -72,7 +75,15 @@ def search(word):
         print "No matches found for '{}'".format(word)
         return ""
         
-    
+def show_table():
+    """ Show Entire Contents of Table"""
+    logging.debug("Displaying all rows and columns of table")
+    cursor = connection.cursor()
+    command = "select * from snippets"
+    cursor.execute(command)
+    messages = cursor.fetchall()
+    return messages
+        
 def update(name, snippet):
     """ Modify the snippet with the given name."""
     return name, snippet
@@ -94,7 +105,8 @@ def main():
     put_parser = subparsers.add_parser("put", help ="Store a snippet")
     put_parser.add_argument("name", help = "Name of the snippet")
     put_parser.add_argument("snippet", help = "Snippet text")
-    put_parser.add_argument("--hide", help = "Boolean option to show/hide the snippet", action = "store_true")
+    put_parser.add_argument("--hide", help = "Boolean option to hide the snippet", action = "store_true")
+    put_parser.add_argument("--show", help = "Boolean option to show the snippet", action = "store_true")
     
     # Subparser for the get command
     logging.debug("Constrcuting the get parser")
@@ -110,6 +122,10 @@ def main():
     search_parser = subparsers.add_parser("search", help = "Retrieve list of all snippets contaiing the desired word")
     search_parser.add_argument("word", help = "similarity being searched")
     
+    #subparser for show_table command
+    logging.debug("Constrcuting the display_table subparser")
+    table_parser = subparsers.add_parser("show_table", help = "Display all table contents")
+    
     arguments = parser.parse_args()
     
     
@@ -121,12 +137,21 @@ def main():
     if command == "put":
         name,snippet = put(**arguments)
         print "Stored {!r} as {!r}".format(snippet,name)
-        print "Hidden", arguments['hide']
+        print "Hidden = ", arguments['hide']
         if arguments['hide']:
             print "This snippet will be hidden."
+        else:
+            print "This snippet will be shown."
     elif command == "get":
-        snippet = get(**arguments)
-        print "Retrieved snippet: {!r}".format(snippet)
+        results = get(**arguments)
+        if results == -1:
+            pass
+        else:
+            if results[2]:
+                print "This snippet is hidden."
+                print "Contact your adminstrator to inquire about access."
+            else:
+                print "Retrieved snippet: {!r}".format(results[1])
     elif command == "catalog":
         keys = catalog()
         print "The following keys are currently in the snippets database:"
@@ -142,6 +167,10 @@ def main():
             for match in similar:
                 print "{}) {}: {}".format(str(j), match[0], match[1])
                 j += 1
+    elif command == "show_table":
+        contents = show_table()
+        for row in contents:
+            print row
         
 if __name__ == "__main__":
     main()
