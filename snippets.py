@@ -20,14 +20,27 @@ def put(name, snippet, hide, show):
 #    logging.error("FIXME: Unimplemented - put({!r}, {!r})".format(name, snippet))
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
     #cursor = connection.cursor()
-    print "Hide: {}".format(hide)
-    print "Show: {}".format(show)
-    try:
-        with connection, connection.cursor() as cursor:
-            cursor.execute("insert into snippets values (%s, %s, %s)", (name,snippet, hide))
-    except psycopg2.IntegrityError as e:
-        with connection, connection.cursor() as cursor:
-            cursor.execute("update snippets set message = %s, hidden = %s where keyword = %s", (snippet,hide,name))
+#    print "Hide: {}".format(hide)
+#    print "Show: {}".format(show)
+    if not hide and not show:
+#        print "IF IF IF IF"
+        try:
+            with connection, connection.cursor() as cursor:
+                cursor.execute("insert into snippets values (%s, %s)", (name,snippet))
+        except psycopg2.IntegrityError as e:
+            with connection, connection.cursor() as cursor:
+                cursor.execute("update snippets set message = %s where keyword = %s", (snippet,name))
+    elif hide and show:
+#        print "ELIF ELIF ELIF"
+        return float('-inf'), float('-inf')
+    else:
+#        print "ELSE ELSE ELSE"
+        try: #new snippet
+            with connection, connection.cursor() as cursor:
+                cursor.execute("insert into snippets values (%s, %s, %s)", (name,snippet, hide))
+        except psycopg2.IntegrityError as e: #existing snippet
+            with connection, connection.cursor() as cursor:
+                cursor.execute("update snippets set message = %s, hidden = %s where keyword = %s", (snippet,hide,name))
     logging.debug("Snippet stored successfully.")
     return name, snippet
 
@@ -132,16 +145,20 @@ def main():
     # convert the parsed arguments from Namespace to dictionary
     arguments = vars(arguments)
     command = arguments.pop("command")
-    print "Arguments", arguments
+#    print "Arguments", arguments
     
     if command == "put":
         name,snippet = put(**arguments)
-        print "Stored {!r} as {!r}".format(snippet,name)
-        print "Hidden = ", arguments['hide']
-        if arguments['hide']:
-            print "This snippet will be hidden."
+ #       print "{} : {}".format(name,snippet)
+        if name == float('-inf') and snippet == float('-inf') :
+            print "Error 104: Conflicting arguments set."
+            print "Please try entering the snippet again with only one optional argument set."
         else:
-            print "This snippet will be shown."
+            print "Stored {!r} as {!r}".format(snippet,name)
+            if arguments['hide']:
+                print "This snippet will be hidden."
+            elif arguments['show']:
+                print "This snippet will be shown."
     elif command == "get":
         results = get(**arguments)
         if results == -1:
@@ -169,8 +186,10 @@ def main():
                 j += 1
     elif command == "show_table":
         contents = show_table()
+        k = 1
         for row in contents:
-            print row
+            print "{} - {}".format(str(k),row)
+            k+=1
         
 if __name__ == "__main__":
     main()
