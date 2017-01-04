@@ -17,13 +17,8 @@ def put(name, snippet, hide, show):
 
     RETURNS the name and the snippet
     """
-#    logging.error("FIXME: Unimplemented - put({!r}, {!r})".format(name, snippet))
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
-    #cursor = connection.cursor()
-#    print "Hide: {}".format(hide)
-#    print "Show: {}".format(show)
     if not hide and not show:
-#        print "IF IF IF IF"
         try:
             with connection, connection.cursor() as cursor:
                 cursor.execute("insert into snippets values (%s, %s)", (name,snippet))
@@ -31,11 +26,9 @@ def put(name, snippet, hide, show):
             with connection, connection.cursor() as cursor:
                 cursor.execute("update snippets set message = %s where keyword = %s", (snippet,name))
     elif hide and show:
-#        print "ELIF ELIF ELIF"
         return float('-inf'), float('-inf')
     else:
-#        print "ELSE ELSE ELSE"
-        try: #new snippet
+        try: 
             with connection, connection.cursor() as cursor:
                 cursor.execute("insert into snippets values (%s, %s, %s)", (name,snippet, hide))
         except psycopg2.IntegrityError as e: #existing snippet
@@ -51,11 +44,6 @@ def get(name):
     """
     #logging.error("FIXME: Unimplemented - get({!r})".format(name))
     logging.debug("Retrieving snippet {!r}".format(name))
-    #cursor = connection.cursor()
-    #command = "select message from snippets where keyword = (%s)"
-    #cursor.execute(command, (name,))
-    #message = cursor.fetchone()
-    #connection.commit()
     with connection, connection.cursor() as cursor:
         command = "select * from snippets where keyword = (%s)"
         cursor.execute(command, (name,))
@@ -141,15 +129,12 @@ def main():
     
     arguments = parser.parse_args()
     
-    
     # convert the parsed arguments from Namespace to dictionary
     arguments = vars(arguments)
     command = arguments.pop("command")
-#    print "Arguments", arguments
-    
+
     if command == "put":
         name,snippet = put(**arguments)
- #       print "{} : {}".format(name,snippet)
         if name == float('-inf') and snippet == float('-inf') :
             print "Error 104: Conflicting arguments set."
             print "Please try entering the snippet again with only one optional argument set."
